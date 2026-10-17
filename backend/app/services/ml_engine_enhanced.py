@@ -8,10 +8,6 @@ import os
 import json
 from datetime import datetime
 
-# Add the aviation data service
-import sys
-sys.path.insert(0, os.path.dirname(__file__))
-
 # Import the original ml_engine functions
 try:
     from .ml_engine import (

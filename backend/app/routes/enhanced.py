@@ -1,20 +1,12 @@
 """
-Enhanced API routes with live aviation data
+Enhanced API routes with live aviation data.
 """
 
 from flask import Blueprint, request, jsonify
 import json
 
 # Import the enhanced prediction function
-import sys
-import os
-sys.path.insert(0, os.path.dirname(__file__))
-
-try:
-    from ..services.ml_engine_enhanced import predict_with_live_data, get_system_status
-except ImportError:
-    # Direct import for testing
-    from ml_engine_enhanced import predict_with_live_data, get_system_status
+from ..services.ml_engine_enhanced import predict_with_live_data, get_system_status
 
 enhanced_bp = Blueprint("enhanced", __name__)
 
