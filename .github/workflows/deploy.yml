@@ -3,14 +3,10 @@ name: Deploy to Render
 on:
   push:
     branches: [ main ]
-    paths:
-      - 'backend/**'
-      - 'requirements.txt'
-  workflow_dispatch:
 
 jobs:
-  deploy:
-    name: Deploy to Render
+  build-and-deploy:
+    name: Build and Deploy
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -21,15 +17,27 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Copy requirements to root if needed
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
         run: |
-          if [ ! -f backend/requirements.txt ] && [ -f requirements.txt ]; then
-            cp requirements.txt backend/requirements.txt
+          python -m pip install --upgrade pip
+          if [ -f backend/requirements.txt ]; then
+            pip install -r backend/requirements.txt
+          elif [ -f requirements.txt ]; then
+            pip install -r requirements.txt
           fi
 
+      - name: Run tests
+        run: |
+          cd backend
+          python -c "import app; print('Import successful')"
+
       - name: Deploy to Render
-        uses: render-deploy-actions@v1
-        with:
-          api-key: ${{ secrets.RENDER_API_KEY }}
-          service-id: ${{ secrets.RENDER_SERVICE_ID }}
-          wait-for-success: true
+        run: echo "Render auto-deploy will handle deployment via git push"

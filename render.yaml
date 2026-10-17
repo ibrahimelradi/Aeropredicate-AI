@@ -3,19 +3,13 @@ services:
     name: aeropredict-ai
     runtime: python
     build:
+      buildCommand: pip install -r backend/requirements.txt
       dockerfilePath: backend/Dockerfile
-    source:
-      git: backend
     envVars:
       - key: PYTHON_VERSION
         value: "3.12"
       - key: PORT
         value: 5000
-      - key: FLASK_ENV
-        value: production
     autoDeploy: true
     plan: free
     healthCheckPath: /api/model/status
-    disk:
-      name: data
-      mountPath: /tmp/data
