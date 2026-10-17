@@ -10,9 +10,11 @@ def create_app():
 
     from .routes.predict import predict_bp
     from .routes.analytics import analytics_bp
+    from .routes.enhanced import enhanced_bp
 
     app.register_blueprint(predict_bp, url_prefix="/api")
     app.register_blueprint(analytics_bp, url_prefix="/api")
+    app.register_blueprint(enhanced_bp, url_prefix="/api")
 
     @app.route("/")
     def index():
