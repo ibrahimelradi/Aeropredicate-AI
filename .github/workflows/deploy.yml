@@ -6,7 +6,7 @@ on:
 
 jobs:
   build-and-deploy:
-    name: Build and Deploy
+    name: Build and Deploy to Render
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -17,7 +17,7 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Cache pip
+      - name: Cache pip dependencies
         uses: actions/cache@v4
         with:
           path: ~/.cache/pip
@@ -28,16 +28,19 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          if [ -f backend/requirements.txt ]; then
-            pip install -r backend/requirements.txt
-          elif [ -f requirements.txt ]; then
-            pip install -r requirements.txt
-          fi
+          pip install -r backend/requirements.txt
 
       - name: Run tests
         run: |
           cd backend
-          python -c "import app; print('Import successful')"
+          python -c "import sys; sys.path.insert(0, '.'); import app; print('✅ Import successful')"
 
-      - name: Deploy to Render
-        run: echo "Render auto-deploy will handle deployment via git push"
+      - name: Trigger Render Deploy
+        run: |
+          # If RENDER_DEPLOY_HOOK_URL is set, trigger deploy via webhook
+          if [ ! -z "$RENDER_DEPLOY_HOOK_URL" ]; then
+            curl -X POST $RENDER_DEPLOY_HOOK_URL
+            echo "✅ Triggered deploy via webhook"
+          else
+            echo "⚠️ No RENDER_DEPLOY_HOOK_URL set - Render should auto-deploy via git integration"
+          fi
