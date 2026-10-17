@@ -43,7 +43,7 @@ except ImportError:
         META_PATH,
     )
 
-from aviation_data_service import (
+from .aviation_data_service import (
     get_airport_weather_severity,
     get_icao_code,
     get_live_traffic,
