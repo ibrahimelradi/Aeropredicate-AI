@@ -3,8 +3,8 @@ services:
     name: aeropredict-ai
     runtime: python
     build:
-      buildCommand: pip install -r backend/requirements.txt
-      dockerfilePath: backend/Dockerfile
+      buildCommand: pip install -r requirements.txt
+      dockerfilePath: Dockerfile
     envVars:
       - key: PYTHON_VERSION
         value: "3.12"
