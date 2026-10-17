@@ -5,8 +5,8 @@ on:
     branches: [ main ]
 
 jobs:
-  build-and-deploy:
-    name: Build and Deploy to Render
+  render-deploy:
+    name: Build & Deploy
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -16,14 +16,6 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-
-      - name: Cache pip dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
 
       - name: Install dependencies
         run: |
@@ -37,10 +29,5 @@ jobs:
 
       - name: Trigger Render Deploy
         run: |
-          # If RENDER_DEPLOY_HOOK_URL is set, trigger deploy via webhook
-          if [ ! -z "$RENDER_DEPLOY_HOOK_URL" ]; then
-            curl -X POST $RENDER_DEPLOY_HOOK_URL
-            echo "✅ Triggered deploy via webhook"
-          else
-            echo "⚠️ No RENDER_DEPLOY_HOOK_URL set - Render should auto-deploy via git integration"
-          fi
+          echo "✅ Build successful - Render will auto-deploy from GitHub integration"
+          echo "If auto-deploy is not working, manually deploy on https://dashboard.render.com"
