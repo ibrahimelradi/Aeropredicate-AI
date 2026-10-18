@@ -77,6 +77,12 @@ from ..services.safety_manager import (
     assess_runway_risk as _assess_runway,
     generate_safety_report as _safety_report,
 )
+from ..services.quality_manager import (
+    calculate_quality_score as _quality_score,
+    sla_compliance_report as _sla_report,
+    root_cause_analysis as _root_cause,
+    generate_quality_report as _quality_report,
+)
 enhanced_bp = Blueprint("enhanced", __name__)
 
 @enhanced_bp.route("/predict/live", methods=["POST"])
@@ -1010,6 +1016,60 @@ def safety_report():
         result = _safety_report(
             flight_count=int(request.args.get("flight_count", 100)),
             route=request.args.get("route", "IST-JFK")
+        )
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+# ============================================================
+# NEW: Ground Handling Quality Endpoints
+# ============================================================
+
+@enhanced_bp.route("/quality/score", methods=["POST"])
+def quality_score():
+    """
+    Calculate service quality score from events.
+    """
+    data = request.get_json(force=True, silent=True) or {}
+    try:
+        result = _quality_score(data.get("events", []))
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@enhanced_bp.route("/quality/sla", methods=["POST"])
+def quality_sla():
+    """
+    Generate SLA compliance report.
+    """
+    data = request.get_json(force=True, silent=True) or {}
+    try:
+        result = _sla_report(data.get("events", []))
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@enhanced_bp.route("/quality/root-cause", methods=["POST"])
+def quality_root_cause():
+    """
+    Perform root cause analysis on delay reasons.
+    """
+    data = request.get_json(force=True, silent=True) or {}
+    try:
+        result = _root_cause(data.get("delay_reasons", {}))
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@enhanced_bp.route("/quality/report", methods=["GET"])
+def quality_report():
+    """
+    Generate comprehensive quality report.
+    """
+    try:
+        result = _quality_report(
+            flight_count=int(request.args.get("flight_count", 100)),
+            date_range=request.args.get("date_range", "last_30_days")
         )
         return jsonify({"success": True, "data": result})
     except Exception as e:
