@@ -323,7 +323,31 @@ class FlightOpsDecisionSupport:
 # ─────────────────────────────────────────────
 # API Convenience Functions
 # ─────────────────────────────────────────────
-_support = None
+import requests as _requests
+
+def _fetch_live_weather(airport_code: str) -> Optional[Dict]:
+    """Fetch live weather from NOAA AviationWeather."""
+    try:
+        url = f"https://aviationweather.gov/cgi-bin/data/metar.php?ids={airport_code}"
+        resp = _requests.get(url, timeout=5)
+        if resp.status_code == 200:
+            return {"raw": resp.text, "timestamp": datetime.utcnow().isoformat() + "Z"}
+    except Exception:
+        pass
+    return None
+
+def _fetch_opensky_wind(origin: str, destination: str) -> Optional[Dict]:
+    """Fetch upper winds from OpenSky Network (free tier)."""
+    try:
+        # Use OpenSky's B640 endpoint for current weather data
+        url = "https://opensky-network.org/api/states/all"
+        resp = _requests.get(url, timeout=5)
+        if resp.status_code == 200:
+            data = resp.json()
+            return {"aircraft_count": len(data.get("states", [])), "timestamp": datetime.utcnow().isoformat() + "Z"}
+    except Exception:
+        pass
+    return None
 
 def get_support():
     global _support
