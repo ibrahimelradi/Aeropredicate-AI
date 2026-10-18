@@ -31,6 +31,10 @@ from ..services.cargo_optimizer import (
     forecast_cargo_terminal as _forecast_cargo,
     generate_cargo_revenue_report as _revenue_report,
 )
+from ..services.maintenance_planner import (
+    predict_maintenance_for_aircraft,
+    schedule_fleet_maintenance,
+)
 
 enhanced_bp = Blueprint("enhanced", __name__)
 
@@ -473,4 +477,42 @@ def cargo_revenue_report():
         result = _revenue_report(routes if routes else None)
         return jsonify({"success": True, "data": result})
     except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+# ============================================================
+# NEW: Maintenance Planning Endpoints
+# ============================================================
+
+@enhanced_bp.route("/maintenance/predict", methods=["GET"])
+def maintenance_prediction():
+    """
+    Predict maintenance needs for an aircraft.
+    """
+    try:
+        result = predict_maintenance_for_aircraft(
+            registration=request.args.get("registration", "TC-001"),
+            model=request.args.get("model", "A320"),
+            flight_hours=float(request.args.get("flight_hours", 5500)),
+            flight_cycles=int(request.args.get("flight_cycles", 3200)),
+            days_since_new=int(request.args.get("days_since_new", 500)),
+        )
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@enhanced_bp.route("/maintenance/schedule", methods=["POST"])
+def maintenance_schedule():
+    """
+    Schedule fleet-wide maintenance with hangar capacity constraints.
+    """
+    data = request.get_json(force=True, silent=True) or {}
+    
+    try:
+        result = schedule_fleet_maintenance(
+            fleet_size=data.get("fleet_size", 10)
+        )
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
         return jsonify({"success": False, "error": str(e)}), 500
