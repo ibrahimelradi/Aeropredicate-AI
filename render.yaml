@@ -13,6 +13,8 @@ services:
         value: "true"
       - key: PYTHONPATH
         value: "/app"
+      - key: BUILD_TRIGGER
+        value: "concierge-v1-20261018"
     autoDeploy: true
     plan: free
     healthCheckPath: /
