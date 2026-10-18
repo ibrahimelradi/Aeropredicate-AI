@@ -83,6 +83,13 @@ from ..services.quality_manager import (
     root_cause_analysis as _root_cause,
     generate_quality_report as _quality_report,
 )
+from ..services.revenue_analytics import (
+    calculate_clv as _calc_clv,
+    optimize_ancillaries as _optimize_ancillaries,
+    route_profitability as _route_profit,
+    campaign_analysis as _campaign_analysis,
+    revenue_report as _revenue_report,
+)
 enhanced_bp = Blueprint("enhanced", __name__)
 
 @enhanced_bp.route("/predict/live", methods=["POST"])
@@ -1071,6 +1078,85 @@ def quality_report():
             flight_count=int(request.args.get("flight_count", 100)),
             date_range=request.args.get("date_range", "last_30_days")
         )
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+# ============================================================
+# NEW: Revenue Analytics Endpoints
+# ============================================================
+
+@enhanced_bp.route("/revenue/clv", methods=["GET"])
+def revenue_clv():
+    """
+    Calculate Customer Lifetime Value.
+    """
+    try:
+        result = _calc_clv(
+            segment=request.args.get("segment", "frequent_business"),
+            tenure=int(request.args.get("tenure", 24)),
+            bookings=int(request.args.get("bookings", 4))
+        )
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@enhanced_bp.route("/revenue/ancillaries", methods=["GET", "POST"])
+def revenue_ancillaries():
+    """
+    Optimize ancillary revenue.
+    """
+    try:
+        if request.method == "GET":
+            bookings = int(request.args.get("bookings", 10000))
+            segment = request.args.get("segment", "mixed")
+        else:
+            data = request.get_json(force=True, silent=True) or {}
+            bookings = int(data.get("bookings", 10000))
+            segment = data.get("segment", "mixed")
+        
+        result = _optimize_ancillaries(bookings, segment)
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@enhanced_bp.route("/revenue/routes", methods=["GET"])
+def revenue_routes():
+    """
+    Analyze route profitability.
+    """
+    try:
+        routes = request.args.get("routes", "").split(",") if request.args.get("routes") else None
+        result = _route_profit(
+            routes=routes if routes and routes != [""] else None,
+            period=request.args.get("period", "monthly")
+        )
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@enhanced_bp.route("/revenue/campaign", methods=["GET"])
+def revenue_campaign():
+    """
+    Analyze marketing campaign ROI.
+    """
+    try:
+        result = _campaign_analysis(
+            campaign_type=request.args.get("campaign_type", "email_marketing"),
+            audience=int(request.args.get("audience", 10000)),
+            budget=float(request.args.get("budget", 5000))
+        )
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@enhanced_bp.route("/revenue/report", methods=["GET"])
+def revenue_summary():
+    """
+    Generate comprehensive revenue report.
+    """
+    try:
+        result = _revenue_report()
         return jsonify({"success": True, "data": result})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
