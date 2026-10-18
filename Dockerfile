@@ -25,8 +25,9 @@ ENV PORT=5000
 ENV PYTHONPATH=/app
 ENV RENDER=true
 
+# Expose port
 EXPOSE 5000
 
-# Rebuild trigger
-RUN echo "Rebuild timestamp: $(date)"
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "2", "--chdir", "/app", "run:app"]
+# Run the application with gunicorn
+# Target: /app/run.py -> app = create_app()
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "1", "--chdir", "/app", "run:app"]

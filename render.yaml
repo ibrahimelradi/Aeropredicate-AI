@@ -4,7 +4,6 @@ services:
     runtime: python
     build:
       dockerfilePath: Dockerfile
-    startCommand: gunicorn --bind 0.0.0.0:$PORT --workers 1 --chdir /app run:app
     envVars:
       - key: PYTHON_VERSION
         value: "3.12"
