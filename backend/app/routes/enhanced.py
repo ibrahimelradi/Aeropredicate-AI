@@ -35,7 +35,11 @@ from ..services.maintenance_planner import (
     predict_maintenance_for_aircraft,
     schedule_fleet_maintenance,
 )
-
+from ..services.weather_analyzer import (
+    get_weather_report,
+    calculate_wind_optimization,
+    get_live_aircraft_traffic,
+)
 enhanced_bp = Blueprint("enhanced", __name__)
 
 @enhanced_bp.route("/predict/live", methods=["POST"])
@@ -515,4 +519,49 @@ def maintenance_schedule():
     except Exception as e:
         import traceback
         traceback.print_exc()
+        return jsonify({"success": False, "error": str(e)}), 500
+
+# ============================================================
+# NEW: Weather Analysis Endpoints
+# ============================================================
+
+@enhanced_bp.route("/weather/report", methods=["GET"])
+def weather_report():
+    """
+    Get comprehensive weather report for an airport.
+    """
+    try:
+        result = get_weather_report(
+            airport=request.args.get("airport", "IST"),
+            date_str=request.args.get("date", None)
+        )
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@enhanced_bp.route("/weather/fuel-optimization", methods=["GET"])
+def weather_fuel_optimization():
+    """
+    Calculate fuel optimization based on wind patterns.
+    """
+    try:
+        result = calculate_wind_optimization(
+            origin=request.args.get("origin", "IST"),
+            destination=request.args.get("destination", "JFK"),
+            date_str=request.args.get("date", None)
+        )
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@enhanced_bp.route("/weather/live-traffic", methods=["GET"])
+def weather_live_traffic():
+    """
+    Get live aircraft traffic from OpenSky Network.
+    """
+    try:
+        limit = int(request.args.get("limit", 5))
+        result = get_live_aircraft_traffic(limit=limit)
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
