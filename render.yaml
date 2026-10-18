@@ -1,20 +1,17 @@
 services:
   - type: web
     name: aeropredict-ai
-    runtime: python
     env: docker
     dockerfilePath: Dockerfile
     envVars:
-      - key: PYTHON_VERSION
-        value: "3.12"
-      - key: PORT
-        value: "5000"
       - key: RENDER
         value: "true"
       - key: PYTHONPATH
         value: "/app"
       - key: BUILD_TRIGGER
-        value: "concierge-v4-20261018-1700"
+        value: "concierge-v5-20261018-1730"
+      - key: PORT
+        value: "5000"
     autoDeploy: true
     plan: free
     healthCheckPath: /
