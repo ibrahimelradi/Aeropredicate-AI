@@ -19,6 +19,7 @@ from ..services.gse_optimizer import (
 )
 from ..services.route_optimizer import calculate_route_optimization
 from ..services.passenger_flow_forecaster import forecast_passenger_flows
+from ..services.crew_scheduler import resolve_crew_conflict
 
 enhanced_bp = Blueprint("enhanced", __name__)
 
@@ -270,7 +271,47 @@ def route_optimization():
         return jsonify({"success": False, "error": str(e)}), 500
 
 # ============================================================
-# NEW: Passenger Flow Forecasting Endpoints
+# NEW: Crew Scheduling Endpoints
+# ============================================================
+
+@enhanced_bp.route("/crew/resolve", methods=["POST"])
+def crew_resolve_conflict():
+    """
+    Resolve crew scheduling conflict and find replacement crews.
+    
+    Request Body:
+    {
+        "flight_number": "TK1988",
+        "dep_airport": "IST",
+        "arr_airport": "JFK",
+        "date": "2026-10-20",
+        "dep_time": "14:30",
+        "arr_time": "18:45",
+        "aircraft_type": "narrow_body",
+        "crew_requirements": {"captain": 1, "first_officer": 1, "flight_attendant": 4}
+    }
+    """
+    data = request.get_json(force=True, silent=True) or {}
+    
+    try:
+        crew_reqs = data.get("crew_requirements", {"captain": 1, "first_officer": 1, "flight_attendant": 4})
+        
+        result = resolve_crew_conflict(
+            flight_number=data.get("flight_number", "TK1988"),
+            dep_airport=data.get("dep_airport", "IST"),
+            arr_airport=data.get("arr_airport", "JFK"),
+            date_str=data.get("date", ""),
+            dep_time=data.get("dep_time", "14:30"),
+            arr_time=data.get("arr_time", "18:45"),
+            aircraft_type=data.get("aircraft_type", "narrow_body"),
+            crew_count=crew_reqs
+        )
+        
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({"success": False, "error": str(e)}), 500
 # ============================================================
 
 @enhanced_bp.route("/passenger/flow", methods=["POST"])
