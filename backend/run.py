@@ -1,6 +1,11 @@
 import sys, io
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
-sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
+
+# Wrap stdout/stderr for UTF-8 encoding (safe fallback for gunicorn/docker)
+try:
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
+except AttributeError:
+    pass  # No .buffer attribute (running under gunicorn)
 
 from app import create_app
 from app.services.ml_engine import train_model
