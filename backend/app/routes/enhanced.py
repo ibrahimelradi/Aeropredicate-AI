@@ -66,6 +66,11 @@ from ..services.fuel_manager import (
     optimize_fuel_loading as _optimize_fuel_loading,
     track_fuel_costs as _track_fuel,
 )
+from ..services.flight_ops_decision import (
+    go_nogo_decision as _go_nogo,
+    optimize_flight_level as _optimize_flight_level,
+    comprehensive_flight_ops_report as _flight_ops_report,
+)
 enhanced_bp = Blueprint("enhanced", __name__)
 
 @enhanced_bp.route("/predict/live", methods=["POST"])
@@ -872,6 +877,56 @@ def fuel_cost_tracking():
     data = request.get_json(force=True, silent=True) or {}
     try:
         result = _track_fuel(data.get("flights", []))
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+# ============================================================
+# NEW: Flight Ops Decision Support Endpoints
+# ============================================================
+
+@enhanced_bp.route("/ops/go-nogo", methods=["GET"])
+def ops_go_nogo():
+    """
+    Make GO/NO-GO decision based on weather at destination.
+    """
+    try:
+        result = _go_nogo(
+            destination=request.args.get("destination", "IST"),
+            visibility=float(request.args.get("visibility", 3200)),
+            ceiling=float(request.args.get("ceiling", 1000)),
+            approach_type=request.args.get("approach_type", "CAT1")
+        )
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@enhanced_bp.route("/ops/flight-level", methods=["GET"])
+def ops_flight_level():
+    """
+    Optimize flight level for wind advantage.
+    """
+    try:
+        result = _optimize_flight_level(
+            origin=request.args.get("origin", "IST"),
+            destination=request.args.get("destination", "JFK"),
+            aircraft_type=request.args.get("aircraft_type", "A320")
+        )
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@enhanced_bp.route("/ops/flight-report", methods=["GET"])
+def ops_flight_report():
+    """
+    Comprehensive flight operations report.
+    """
+    try:
+        result = _flight_ops_report(
+            origin=request.args.get("origin", "IST"),
+            destination=request.args.get("destination", "JFK"),
+            aircraft_type=request.args.get("aircraft_type", "A320")
+        )
         return jsonify({"success": True, "data": result})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
