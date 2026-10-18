@@ -103,6 +103,12 @@ from ..services.concierge import (
     baggage_alert as _baggage_alert,
     wayfinding as _wayfinding,
 )
+from ..services.carbon_marketplace import (
+    optimize_carbon_portfolio as _optimize_carbon,
+    check_corsia_compliance as _corsia_check,
+    forecast_carbon_prices as _carbon_forecast,
+    carbon_marketplace_report as _carbon_report,
+)
 enhanced_bp = Blueprint("enhanced", __name__)
 
 @enhanced_bp.route("/predict/live", methods=["POST"])
@@ -1365,5 +1371,66 @@ def concierge_comprehensive():
             "baggage_info": baggage,
             "status": "ready",
         }})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+# ============================================================
+# NEW: Carbon Marketplace Endpoints
+# ============================================================
+
+@enhanced_bp.route("/carbon/portfolio", methods=["POST"])
+def carbon_portfolio():
+    """
+    Optimize carbon offset portfolio for an airline.
+    """
+    data = request.get_json(force=True, silent=True) or {}
+    try:
+        result = _optimize_carbon(
+            emissions_tonnes=data.get("emissions_tonnes", 100000),
+            budget=data.get("budget_usd", 500000),
+            risk_tolerance=data.get("risk_tolerance", "moderate")
+        )
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@enhanced_bp.route("/carbon/corsia-check", methods=["GET"])
+def carbon_corsia_check():
+    """
+    Check CORSIA compliance and calculate required offsets.
+    """
+    try:
+        result = _corsia_check(
+            icao_code=request.args.get("icao_code", "THY"),
+            annual_emissions=float(request.args.get("annual_emissions", 500000)),
+            baseline=float(request.args.get("baseline", 450000)),
+            year=int(request.args.get("year", 0)) or None
+        )
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@enhanced_bp.route("/carbon/price-forecast", methods=["GET"])
+def carbon_price_forecast():
+    """
+    Forecast carbon credit prices.
+    """
+    try:
+        result = _carbon_forecast(
+            horizon=int(request.args.get("horizon", 12)),
+            market_type=request.args.get("market_type", "vcm")
+        )
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@enhanced_bp.route("/carbon/marketplace-report", methods=["GET"])
+def carbon_marketplace_report_endpoint():
+    """
+    Generate comprehensive carbon marketplace report.
+    """
+    try:
+        result = _carbon_report()
+        return jsonify({"success": True, "data": result})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
