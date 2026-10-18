@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aviation AI API Documentation</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0a1128; color: #e0e0e0; line-height: 1.6; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+        .header { background: linear-gradient(135deg, #0066CC 0%, #00AAFF 100%); padding: 2rem; text-align: center; }
+        .header h1 { color: white; font-size: 2rem; }
+        .header p { color: #B3E5FC; margin-top: 0.5rem; }
+        .section { background: #1a1a2e; border-radius: 12px; padding: 2rem; margin: 1.5rem 0; border: 1px solid #2a2a4a; }
+        .section h2 { color: #00B0FF; font-size: 1.5rem; margin-bottom: 1rem; }
+        .endpoint { background: #0f0f23; border-radius: 8px; padding: 1rem 1.5rem; margin: 1rem 0; border-left: 3px solid #00B0FF; }
+        .endpoint .method { display: inline-block; padding: 0.2rem 0.8rem; border-radius: 4px; font-size: 0.8rem; font-weight: bold; }
+        .method.GET { background: #4CAF50; color: white; }
+        .method.POST { background: #FF9800; color: white; }
+        .method.PUT { background: #2196F3; color: white; }
+        .method.DELETE { background: #f44336; color: white; }
+        .endpoint code { background: #0a1128; padding: 0.2rem 0.5rem; border-radius: 3px; color: #00B0FF; }
+        .badge { display: inline-block; background: #0066CC; color: white; font-size: 0.7rem; padding: 0.2rem 0.6rem; border-radius: 12px; margin-left: 0.5rem; }
+        pre { background: #050510; padding: 1rem; border-radius: 8px; overflow-x: auto; font-size: 0.85rem; color: #d4d4d4; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 1rem; }
+        .card { background: #0f0f23; border-radius: 8px; padding: 1.5rem; border: 1px solid #2a2a4a; }
+        .card h4 { color: #00B0FF; margin-bottom: 0.5rem; }
+        .card ul { list-style: none; padding-left: 0; }
+        .card ul li { padding: 0.3rem 0; border-bottom: 1px solid #1a1a2e; }
+        .stat { text-align: center; }
+        .stat .value { font-size: 2rem; font-weight: bold; color: #00B0FF; }
+        .stat .label { font-size: 0.8rem; color: #888; }
+        .stats { display: flex; gap: 3rem; justify-content: center; margin: 2rem 0; flex-wrap: wrap; }
+        table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+        th, td { padding: 0.5rem; text-align: left; border-bottom: 1px solid #2a2a4a; }
+        th { color: #00B0FF; }
+        .back-link { display: inline-block; margin: 1rem 0; color: #00B0FF; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>✈️ Aviation AI Platform - API Documentation</h1>
+        <p>Complete API reference for 8 AI-powered aviation optimization modules</p>
+    </div>
+    
+    <div class="container">
+        <div class="stats">
+            <div class="stat">
+                <div class="value">23</div>
+                <div class="label">API Endpoints</div>
+            </div>
+            <div class="stat">
+                <div class="value">8</div>
+                <div class="label">AI Modules</div>
+            </div>
+            <div class="stat">
+                <div class="value">FREE</div>
+                <div class="label">Data: NOAA + OpenSky</div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>📚 All Endpoints</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Method</th>
+                        <th>Endpoint</th>
+                        <th>Module</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td><span class="method GET">GET</span></td><td><code>/api/model/status</code></td><td>Flight Delay</td><td>Model status check</td></tr>
+                    <tr><td><span class="method POST">POST</span></td><td><code>/api/predict</code></td><td>Flight Delay</td><td>Predict delay/cancellation/ontime</td></tr>
+                    <tr><td><span class="method POST">POST</span></td><td><code>/api/predict/live</code></td><td>Flight Delay</td><td>Prediction with live weather data</td></tr>
+                    <tr><td><span class="method GET">GET</span></td><td><code>/api/system/status</code></td><td>Flight Delay</td><td>System health + data source status</td></tr>
+                    <tr><td><span class="method POST">POST</span></td><td><code>/api/turnaround/plan</code></td><td>Turnaround Optimizer</td><td>Optimize aircraft turnaround</td></tr>
+                    <tr><td><span class="method GET">GET</span></td><td><code>/api/gse/status</code></td><td>GSE Tracker</td><td>Fleet status and utilization</td></tr>
+                    <tr><td><span class="method GET">GET</span></td><td><code>/api/gse/idle</code></td><td>GSE Tracker</td><td>Find idle equipment</td></tr>
+                    <tr><td><span class="method GET">GET</span></td><td><code>/api/gse/maintenance</code></td><td>GSE Tracker</td><td>Predictive maintenance alerts</td></tr>
+                    <tr><td><span class="method POST">POST</span></td><td><code>/api/gse/optimize</code></td><td>GSE Tracker</td><td>Optimize GSE allocation</td></tr>
+                    <tr><td><span class="method GET">GET</span></td><td><code>/api/gse/report</code></td><td>GSE Tracker</td><td>Comprehensive utilization report</td></tr>
+                    <tr><td><span class="method GET">GET</span></td><td><code>/api/baggage/risk</code></td><td>Baggage Risk</td><td>Predict baggage handling risk</td></tr>
+                    <tr><td><span class="method POST">POST</span></td><td><code>/api/route/optimize</code></td><td>Route Optimizer</td><td>Fuel + altitude + delay optimization</td></tr>
+                    <tr><td><span class="method POST">POST</span></td><td><code>/api/passenger/flow</code></td><td>Passenger Flow</td><td>Predict check-in/security/baggage congestion</td></tr>
+                    <tr><td><span class="method POST">POST</span></td><td><code>/api/crew/resolve</code></td><td>Crew Scheduler</td><td>Resolve crew conflicts + FTL compliance</td></tr>
+                    <tr><td><span class="method GET">GET</span></td><td><code>/api/carbon/footprint</code></td><td>Carbon Calc</td><td>CO2 emissions calculation</td></tr>
+                    <tr><td><span class="method GET">GET</span></td><td><code>/api/carbon/corsia</code></td><td>Carbon Calc</td><td>CORSIA + EU ETS compliance</td></tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="section">
+            <h2>🔮 1. Flight Delay Prediction</h2>
+            
+            <div class="endpoint">
+                <h3>Predict Flight Delay (Live Weather)</h3>
+                <span class="method POST">POST</span> <code>/api/predict/live</code>
+                <p>Enhanced prediction with real-time NOAA weather and OpenSky traffic data.</p>
+                
+                <pre>"{
+  \"flight_number": \"TK1988\",
+  \"dep_airport\": \"IST\",
+  \"arr_airport\": \"JFK\",
+  \"airline\": \"TK\",
+  \"date": "2026-10-20",
+  \"dep_time": "14:30"
+}"</pre>
+                
+                <pre>Response: {
+  "success": true,
+  "data": {
+    "risk_tier": "MODERATE",
+    "probabilities": {
+      "on_time": 57.7,
+      "delayed": 35.2,
+      "cancelled": 7.1
+    },
+    "weather_seeds": {
+      "departure": 0.25,
+      "arrival": 0.15,
+      "source": "live_noaa"
+    }
+  }
+}"</pre>
+            </div>
+        </div>
+        
+        <div class="grid">
+            <div class="card">
+                <h4>🔄 2. Turnaround Optimization</h4>
+                <p>Predictive task sequencing for aircraft ground operations.</p>
+                <pre>POST /api/turnaround/plan
+{"flight_number":"TK1988","dep_airport":"IST",
+ "arr_airport":"JFK","airline":"TK",
+ "date":"2026-10-20","dep_time":"14:30",
+ "aircraft_type":"narrow_body","crew_count":5}</pre>
+                <p><strong>Output:</strong> 204 min turnaround, 90% confidence, 3 bottlenecks</p>
+            </div>
+            
+            <div class="card">
+                <h4>🛠 3. GSE Tracking</h4>
+                <p>Ground Support Equipment fleet optimization.</p>
+                <pre>GET /api/gse/status
+GET /api/gse/idle
+GET /api/gse/maintenance
+POST /api/gse/optimize</pre>
+                <p><strong>Savings:</strong> $635+/day from idle recovery</p>
+            </div>
+            
+            <div class="card">
+                <h4>🧳 4. Baggage Risk Predictor</h4>
+                <p>Predict baggage mishandling risks before departure.</p>
+                <pre>GET /api/baggage/risk
+  ?flight_number=TK1988
+  &dep_airport=IST
+  &arr_airport=JFK</pre>
+            </div>
+        </div>
+        
+        <div class="grid" style="margin-top: 1rem;">
+            <div class="card">
+                <h4>🛣️ 5. Route Optimizer</h4>
+                <pre>POST /api/route/optimize
+{"flight_number":"TK1988",...}</pre>
+                <p>CO2: 0.675 tonnes | EU ETS: $77.96</p>
+            </div>
+            
+            <div class="card">
+                <h4>👥 6. Passenger Flow Forecasting</h4>
+                <pre>POST /api/passenger/flow
+{"airport":"IST",
+ "total_passengers":45000}</pre>
+                <p>Predicts: check-in, security, baggage claim</p>
+            </div>
+            
+            <div class="card">
+                <h4>👨‍✈️ 7. Crew Scheduling Resolver</h4>
+                <pre>POST /api/crew/resolve
+{"flight_number":"TK1988",...}</pre>
+                <p>FTL compliance + fatigue risk + replacements</p>
+            </div>
+            
+            <div class="card">
+                <h4>🌱 8. Carbon Compliance Calculator</h4>
+                <pre>GET /api/carbon/corsia
+  ?flight_number=TK1988</pre>
+                <p>CORSIA Phase II | EU ETS applicable</p>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>🎯 Monetization Targets</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Solution</th>
+                        <th>Target</th>
+                        <th>Pricing Model</th>
+                        <th>MRR Potential</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>Flight Delay API</td><td>Turkish Airlines, Pegasus</td><td>$2K-20K/month</td><td>$2K-20K</td></tr>
+                    <tr><td>Turnaround Optimizer</td><td>Istanbul Airport (IST)</td><td>$5K-50K/month</td><td>$5K-50K</td></tr>
+                    <tr><td>GSE Tracking</td><td>TAV, Çelebi, Swissport</td><td>$1K-10K/month</td><td>$1K-10K</td></tr>
+                    <tr><td>Passenger Flow</td><td>Airport authorities</td><td>$1K-15K/month</td><td>$1K-15K</td></tr>
+                    <tr><td>Crew Scheduler</td><td>Airlines (TK, PC, OS)</td><td>$2K-10K/month</td><td>$2K-10K</td></tr>
+                    <tr><td>Carbon Compliance</td><td>All EU-serving airlines</td><td>$500-5K/month</td><td>$500-5K</td></tr>
+                    <tr><td>Baggage Risk</td><td>Large airports</td><td>$500-3K/month</td><td>$500-3K</td></tr>
+                    <tr><td>Route Optimizer</td><td>Charter/fleet operators</td><td>$1K-5K/month</td><td>$1K-5K</td></tr>
+                </tbody>
+            </table>
+            
+            <p style="margin-top: 1rem; text-align: center; color: #00B0FF; font-weight: bold;">
+                Total Combined MRR Potential: $23.5K-120.5K/month
+            </p>
+        </div>
+        
+        <div class="section">
+            <h2>🚀 Getting Started</h2>
+            <p>1. Deploy the API: <code>git push origin main</code> → auto-deploys to Render</p>
+            <p>2. Test endpoints with the sample requests above</p>
+            <p>3. Contact airports/ground handlers in Istanbul for pilot programs</p>
+            <p>4. Package as SaaS product with tiered pricing</p>
+            
+            <p style="margin-top: 1rem;">
+                <a href="/" class="back-link">← Back to Main Dashboard</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>
