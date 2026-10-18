@@ -18,6 +18,7 @@ from ..services.gse_optimizer import (
     get_utilization_report,
 )
 from ..services.route_optimizer import calculate_route_optimization
+from ..services.passenger_flow_forecaster import forecast_passenger_flows
 
 enhanced_bp = Blueprint("enhanced", __name__)
 
@@ -260,6 +261,35 @@ def route_optimization():
             date_str=data.get("date", ""),
             dep_time=data.get("dep_time", "14:30"),
             aircraft_type=data.get("aircraft_type", "narrow_body")
+        )
+        
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({"success": False, "error": str(e)}), 500
+
+# ============================================================
+# NEW: Passenger Flow Forecasting Endpoints
+# ============================================================
+
+@enhanced_bp.route("/passenger/flow", methods=["POST"])
+def passenger_flow_forecast():
+    """
+    Forecast passenger flow through airport processes (check-in, security, baggage).
+    """
+    data = request.get_json(force=True, silent=True) or {}
+    
+    try:
+        result = forecast_passenger_flows(
+            airport=data.get("airport", "IST"),
+            date=data.get("date", ""),
+            total_passengers=data.get("total_passengers", 45000),
+            check_in_lanes=data.get("check_in_lanes", 20),
+            security_lanes=data.get("security_lanes", 8),
+            fast_track_lanes=data.get("fast_track_lanes", 2),
+            carousels=data.get("carousels", 4),
+            self_service_ratio=data.get("self_service_ratio", 0.4)
         )
         
         return jsonify({"success": True, "data": result})
