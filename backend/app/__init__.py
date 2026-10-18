@@ -25,3 +25,4 @@ def create_app():
         return send_from_directory(str(FRONTEND_DIR), path)
 
     return app
+# Cache bust 1792330042
