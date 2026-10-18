@@ -71,6 +71,12 @@ from ..services.flight_ops_decision import (
     optimize_flight_level as _optimize_flight_level,
     comprehensive_flight_ops_report as _flight_ops_report,
 )
+from ..services.safety_manager import (
+    assess_safety_risk as _assess_risk,
+    assess_fatigue_risk as _assess_fatigue,
+    assess_runway_risk as _assess_runway,
+    generate_safety_report as _safety_report,
+)
 enhanced_bp = Blueprint("enhanced", __name__)
 
 @enhanced_bp.route("/predict/live", methods=["POST"])
@@ -926,6 +932,84 @@ def ops_flight_report():
             origin=request.args.get("origin", "IST"),
             destination=request.args.get("destination", "JFK"),
             aircraft_type=request.args.get("aircraft_type", "A320")
+        )
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+# ============================================================
+# NEW: Safety & Risk Management Endpoints
+# ============================================================
+
+@enhanced_bp.route("/safety/risk-assessment", methods=["GET", "POST"])
+def safety_risk_assessment():
+    """
+    Perform risk assessment on identified hazards.
+    """
+    try:
+        if request.method == "GET":
+            hazards = [
+                {"category": "weather", "hazard": "wind_shear", "likelihood": "occasional",
+                 "severity": "high", "mitigation": "wind_shear_detection"},
+            ]
+        else:
+            data = request.get_json(force=True, silent=True) or {}
+            hazards = data.get("hazards", [])
+        
+        result = _assess_risk(hazards)
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@enhanced_bp.route("/safety/fatigue", methods=["GET", "POST"])
+def safety_fatigue():
+    """
+    Assess fatigue risk for flight crew.
+    """
+    try:
+        if request.method == "GET":
+            pilot_data = {
+                "flight_hours_24h": 8,
+                "flight_hours_7d": 30,
+                "night_flights_28d": 3,
+                "early_starts_7d": 5,
+                "consecutive_days": 4,
+                "time_zones": 2,
+            }
+        else:
+            data = request.get_json(force=True, silent=True) or {}
+            pilot_data = data.get("pilot_data", {})
+        
+        result = _assess_fatigue(pilot_data)
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@enhanced_bp.route("/safety/runway-risk", methods=["GET"])
+def safety_runway_risk():
+    """
+    Assess runway excursion risk during landing.
+    """
+    try:
+        result = _assess_runway(
+            runway_condition=request.args.get("runway_condition", "wet"),
+            aircraft_weight=request.args.get("aircraft_weight", "medium"),
+            landing_speed=float(request.args.get("landing_speed", 130)),
+            pilot_experience=request.args.get("pilot_experience", "experienced")
+        )
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@enhanced_bp.route("/safety/report", methods=["GET"])
+def safety_report():
+    """
+    Generate comprehensive safety report.
+    """
+    try:
+        result = _safety_report(
+            flight_count=int(request.args.get("flight_count", 100)),
+            route=request.args.get("route", "IST-JFK")
         )
         return jsonify({"success": True, "data": result})
     except Exception as e:
