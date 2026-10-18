@@ -9,9 +9,9 @@ services:
       - key: PYTHONPATH
         value: "/app"
       - key: BUILD_TRIGGER
-        value: "concierge-v6-20261018-2000"
+        value: "rebuild-v1-$(date +%s)"
       - key: PORT
         value: "5000"
-    autoDeploy: false
+    autoDeploy: true
     plan: free
     healthCheckPath: /
