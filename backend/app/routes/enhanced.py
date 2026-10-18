@@ -20,6 +20,10 @@ from ..services.gse_optimizer import (
 from ..services.route_optimizer import calculate_route_optimization
 from ..services.passenger_flow_forecaster import forecast_passenger_flows
 from ..services.crew_scheduler import resolve_crew_conflict
+from ..services.carbon_compliance import (
+    calculate_carbon_footprint,
+    calculate_corsia_compliance,
+)
 
 enhanced_bp = Blueprint("enhanced", __name__)
 
@@ -337,4 +341,60 @@ def passenger_flow_forecast():
     except Exception as e:
         import traceback
         traceback.print_exc()
+        return jsonify({"success": False, "error": str(e)}), 500
+
+# ============================================================
+# NEW: Carbon Compliance Endpoints
+# ============================================================
+
+@enhanced_bp.route("/carbon/footprint", methods=["GET"])
+def carbon_footprint():
+    """
+    Calculate carbon footprint for a flight.
+    
+    Query Parameters:
+    - flight_number: Flight identifier
+    - dep_airport: Departure airport
+    - arr_airport: Arrival airport
+    - aircraft_type: Aircraft model (default: A320)
+    - passengers: Passenger count (default: 150)
+    - date: Date YYYY-MM-DD (optional)
+    """
+    try:
+        result = calculate_carbon_footprint(
+            flight_number=request.args.get("flight_number", "TK1988"),
+            dep_airport=request.args.get("dep_airport", "IST"),
+            arr_airport=request.args.get("arr_airport", "JFK"),
+            aircraft_type=request.args.get("aircraft_type", "A320"),
+            passengers=int(request.args.get("passengers", 150)),
+            date_str=request.args.get("date", ""),
+        )
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@enhanced_bp.route("/carbon/corsia", methods=["GET"])
+def carbon_corsia():
+    """
+    Calculate CORSIA compliance costs and requirements.
+    
+    Query Parameters:
+    - flight_number: Flight identifier
+    - dep_airport: Departure airport
+    - arr_airport: Arrival airport
+    - aircraft_type: Aircraft model (default: A320)
+    - passengers: Passenger count (default: 150)
+    - date: Date YYYY-MM-DD (optional)
+    """
+    try:
+        result = calculate_corsia_compliance(
+            flight_number=request.args.get("flight_number", "TK1988"),
+            dep_airport=request.args.get("dep_airport", "IST"),
+            arr_airport=request.args.get("arr_airport", "JFK"),
+            date_str=request.args.get("date", ""),
+            aircraft_type=request.args.get("aircraft_type", "A320"),
+            passengers=int(request.args.get("passengers", 150)),
+        )
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
