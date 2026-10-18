@@ -17,6 +17,7 @@ from ..services.gse_optimizer import (
     optimize_gse_allocation,
     get_utilization_report,
 )
+from ..services.route_optimizer import calculate_route_optimization
 
 enhanced_bp = Blueprint("enhanced", __name__)
 
@@ -237,4 +238,32 @@ def baggage_risk_prediction():
             }
         })
     except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+# ============================================================
+# NEW: Route Optimization Endpoints
+# ============================================================
+
+@enhanced_bp.route("/route/optimize", methods=["POST"])
+def route_optimization():
+    """
+    Calculate optimal flight route with fuel, altitude, and delay analysis.
+    """
+    data = request.get_json(force=True, silent=True) or {}
+    
+    try:
+        result = calculate_route_optimization(
+            flight_number=data.get("flight_number", "TK1988"),
+            dep_airport=data.get("dep_airport", "IST"),
+            arr_airport=data.get("arr_airport", "JFK"),
+            airline=data.get("airline", "TK"),
+            date_str=data.get("date", ""),
+            dep_time=data.get("dep_time", "14:30"),
+            aircraft_type=data.get("aircraft_type", "narrow_body")
+        )
+        
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
         return jsonify({"success": False, "error": str(e)}), 500
