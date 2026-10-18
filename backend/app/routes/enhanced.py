@@ -24,6 +24,13 @@ from ..services.carbon_compliance import (
     calculate_carbon_footprint,
     calculate_corsia_compliance,
 )
+from ..services.fleet_scheduler import generate_fleet_schedule
+from ..services.airport_slot_manager import allocate_airport_slots
+from ..services.cargo_optimizer import (
+    optimize_cargo_flight as _optimize_cargo,
+    forecast_cargo_terminal as _forecast_cargo,
+    generate_cargo_revenue_report as _revenue_report,
+)
 
 enhanced_bp = Blueprint("enhanced", __name__)
 
@@ -395,6 +402,75 @@ def carbon_corsia():
             aircraft_type=request.args.get("aircraft_type", "A320"),
             passengers=int(request.args.get("passengers", 150)),
         )
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+# ============================================================
+# NEW: Airport Slot Management Endpoints
+# ============================================================
+
+@enhanced_bp.route("/slots/allocate", methods=["POST"])
+def slot_allocation():
+    """
+    Allocate airport slots based on airline requests.
+    """
+    data = request.get_json(force=True, silent=True) or {}
+    
+    try:
+        result = allocate_airport_slots(
+            airport=data.get("airport", "IST"),
+            request_count=data.get("request_count", 30),
+            capacity=data.get("capacity_per_hour", 40)
+        )
+        
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({"success": False, "error": str(e)}), 500
+
+# ============================================================
+# NEW: Cargo Handling Endpoints
+# ============================================================
+
+@enhanced_bp.route("/cargo/optimize", methods=["POST"])
+def cargo_flight_optimization():
+    """Optimize cargo flight for a shipment."""
+    data = request.get_json(force=True, silent=True) or {}
+    
+    try:
+        result = _optimize_cargo(
+            shipment_id=data.get("shipment_id", "SHP001"),
+            origin=data.get("origin", "IST"),
+            destination=data.get("destination", "JFK"),
+            weight_tonnes=data.get("weight_tonnes", 25.0),
+            volume_cbm=data.get("volume_cbm", 150.0),
+            cargo_type=data.get("cargo_type", "general"),
+            priority=data.get("priority", "normal"),
+        )
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@enhanced_bp.route("/cargo/terminal", methods=["GET"])
+def cargo_terminal_forecast():
+    """Forecast cargo terminal capacity utilization."""
+    try:
+        terminal_type = request.args.get("terminal_type", "large")
+        result = _forecast_cargo(terminal_type)
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@enhanced_bp.route("/cargo/revenue", methods=["POST"])
+def cargo_revenue_report():
+    """Generate cargo revenue optimization report."""
+    data = request.get_json(force=True, silent=True) or {}
+    
+    try:
+        routes = data.get("routes", None)
+        result = _revenue_report(routes if routes else None)
         return jsonify({"success": True, "data": result})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
