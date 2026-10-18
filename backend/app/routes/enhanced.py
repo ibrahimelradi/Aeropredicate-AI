@@ -54,6 +54,18 @@ from ..services.ground_ops_scheduler import (
     optimize_fuel_dispatch as _optimize_fuel,
     comprehensive_ground_ops_report as _ground_ops_report,
 )
+from ..services.cargo_revenue_manager import (
+    get_dynamic_price as _dynamic_price,
+    allocate_cargo_capacity as _allocate_cargo,
+    forecast_cargo_demand as _forecast_demand,
+    optimize_booking_classes as _optimize_booking,
+)
+from ..services.fuel_manager import (
+    forecast_fuel_prices as _forecast_fuel,
+    recommend_fuel_hedge as _hedge_recommend,
+    optimize_fuel_loading as _optimize_fuel_loading,
+    track_fuel_costs as _track_fuel,
+)
 enhanced_bp = Blueprint("enhanced", __name__)
 
 @enhanced_bp.route("/predict/live", methods=["POST"])
@@ -731,6 +743,135 @@ def ops_report():
         result = _ground_ops_report(
             date=data.get("date", None)
         )
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+# ============================================================
+# NEW: Cargo Revenue Management Endpoints
+# ============================================================
+
+@enhanced_bp.route("/cargo/price", methods=["GET"])
+def cargo_dynamic_price():
+    """
+    Get dynamic pricing for a cargo shipment.
+    """
+    try:
+        result = _dynamic_price(
+            route=request.args.get("route", "IST-JFK"),
+            demand_level=request.args.get("demand_level", "medium"),
+            days_to_departure=int(request.args.get("days_to_departure", 7)),
+            booking_class=request.args.get("booking_class", "Y")
+        )
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@enhanced_bp.route("/cargo/demand-forecast", methods=["GET"])
+def cargo_demand_forecast():
+    """
+    Forecast cargo demand for a route.
+    """
+    try:
+        result = _forecast_demand(
+            route=request.args.get("route", "IST-JFK"),
+            date_str=request.args.get("date", None)
+        )
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@enhanced_bp.route("/cargo/booking-classes", methods=["POST"])
+def cargo_booking_classes():
+    """
+    Optimize booking class allocation for a route.
+    """
+    data = request.get_json(force=True, silent=True) or {}
+    try:
+        result = _optimize_booking(
+            route=data.get("route", "IST-JFK"),
+            capacity_kg=data.get("capacity_kg", 100000)
+        )
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@enhanced_bp.route("/cargo/allocate", methods=["POST"])
+def cargo_allocate():
+    """
+    Optimize cargo capacity allocation across flights.
+    """
+    data = request.get_json(force=True, silent=True) or {}
+    try:
+        result = _allocate_cargo(
+            data.get("flights", []),
+            data.get("bookings", [])
+        )
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+# ============================================================
+# NEW: Fuel Management Endpoints
+# ============================================================
+
+@enhanced_bp.route("/fuel/price-forecast", methods=["GET"])
+def fuel_price_forecast():
+    """
+    Forecast jet fuel prices for an airport.
+    """
+    try:
+        result = _forecast_fuel(
+            airport=request.args.get("airport", "IST"),
+            days=int(request.args.get("days", 30))
+        )
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@enhanced_bp.route("/fuel/hedge", methods=["GET", "POST"])
+def fuel_hedge():
+    """
+    Recommend fuel hedging strategy.
+    """
+    try:
+        if request.method == "GET":
+            airport = request.args.get("airport", "IST")
+            volume = float(request.args.get("monthly_volume", 500000))
+        else:
+            data = request.get_json(force=True, silent=True) or {}
+            airport = data.get("airport", "IST")
+            volume = float(data.get("monthly_volume", 500000))
+        
+        result = _hedge_recommend(airport, volume)
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@enhanced_bp.route("/fuel/optimize-loading", methods=["GET"])
+def fuel_optimize_loading():
+    """
+    Optimize fuel loading for a flight.
+    """
+    try:
+        result = _optimize_fuel_loading(
+            origin=request.args.get("origin", "IST"),
+            destination=request.args.get("destination", "JFK"),
+            aircraft_type=request.args.get("aircraft_type", "A320"),
+            distance_nm=float(request.args.get("distance_nm", 0)) or None
+        )
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@enhanced_bp.route("/fuel/cost-tracking", methods=["POST"])
+def fuel_cost_tracking():
+    """
+    Track actual vs planned fuel costs.
+    """
+    data = request.get_json(force=True, silent=True) or {}
+    try:
+        result = _track_fuel(data.get("flights", []))
         return jsonify({"success": True, "data": result})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
