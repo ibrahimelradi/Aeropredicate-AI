@@ -40,6 +40,13 @@ from ..services.weather_analyzer import (
     calculate_wind_optimization,
     get_live_aircraft_traffic,
 )
+from ..services.capacity_optimizer import (
+    optimize_gate_allocation as _optimize_gates,
+    optimize_security_lanes as _optimize_security,
+    optimize_retail as _optimize_retail,
+    optimize_baggage as _optimize_baggage,
+    get_airport_capacity_report as _capacity_report,
+)
 enhanced_bp = Blueprint("enhanced", __name__)
 
 @enhanced_bp.route("/predict/live", methods=["POST"])
@@ -562,6 +569,86 @@ def weather_live_traffic():
     try:
         limit = int(request.args.get("limit", 5))
         result = get_live_aircraft_traffic(limit=limit)
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+# ============================================================
+# NEW: Airport Capacity Optimization Endpoints
+# ============================================================
+
+@enhanced_bp.route("/capacity/gate-allocation", methods=["POST"])
+def capacity_gate_allocation():
+    """
+    Optimize gate allocation for a set of flights.
+    """
+    data = request.get_json(force=True, silent=True) or {}
+    try:
+        result = _optimize_gates(
+            data.get("flights", []),
+            airport=data.get("airport", "IST"),
+            include_remote=data.get("include_remote", True)
+        )
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@enhanced_bp.route("/capacity/security-lanes", methods=["POST"])
+def capacity_security_lanes():
+    """
+    Optimize security lane allocation across time blocks.
+    """
+    data = request.get_json(force=True, silent=True) or {}
+    try:
+        result = _optimize_security(
+            data.get("passenger_flows", {"AM": 15000, "MID": 12000, "PM": 18000}),
+            data.get("time_blocks", ["AM", "MID", "PM"]),
+            airport=data.get("airport", "IST")
+        )
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@enhanced_bp.route("/capacity/retail", methods=["POST"])
+def capacity_retail():
+    """
+    Optimize retail/concession space allocation.
+    """
+    data = request.get_json(force=True, silent=True) or {}
+    try:
+        result = _optimize_retail(
+            data.get("area_sqft", 50000),
+            data.get("passenger_traffic", {"T1": 25000, "T2": 15000}),
+            airport=data.get("airport", "IST")
+        )
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@enhanced_bp.route("/capacity/baggage", methods=["POST"])
+def capacity_baggage():
+    """
+    Optimize baggage handling for assigned flights.
+    """
+    data = request.get_json(force=True, silent=True) or {}
+    try:
+        result = _optimize_baggage(
+            data.get("flights", []),
+            airport=data.get("airport", "IST")
+        )
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@enhanced_bp.route("/capacity/report", methods=["GET"])
+def capacity_report():
+    """
+    Get comprehensive airport capacity report.
+    """
+    try:
+        result = _capacity_report(
+            airport=request.args.get("airport", "IST")
+        )
         return jsonify({"success": True, "data": result})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
