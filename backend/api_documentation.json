@@ -1,0 +1,114 @@
+{
+  "name": "Aviation AI Platform",
+  "description": "AI-powered aviation operations optimization suite",
+  "version": "1.0.0",
+  "base_url": "https://aeropredict-ai.onrender.com",
+  "endpoints": [
+    {
+      "name": "Health Check",
+      "method": "GET",
+      "path": "/api/model/status",
+      "description": "Check API and model status"
+    },
+    {
+      "name": "Flight Delay Prediction",
+      "method": "POST",
+      "path": "/api/predict",
+      "description": "Predict flight delay probability and risk factors"
+    },
+    {
+      "name": "Live Flight Delay Prediction",
+      "method": "POST",
+      "path": "/api/predict/live",
+      "description": "Enhanced prediction with real-time NOAA weather + OpenSky traffic data"
+    },
+    {
+      "name": "System Status",
+      "method": "GET",
+      "path": "/api/system/status",
+      "description": "System health including data source connectivity"
+    },
+    {
+      "name": "Turnaround Optimization",
+      "method": "POST",
+      "path": "/api/turnaround/plan",
+      "description": "Generate optimized aircraft turnaround plan with task sequencing"
+    },
+    {
+      "name": "GSE Fleet Status",
+      "method": "GET",
+      "path": "/api/gse/status",
+      "description": "Current GSE fleet status and utilization metrics"
+    },
+    {
+      "name": "Idle Equipment Detection",
+      "method": "GET",
+      "path": "/api/gse/idle",
+      "description": "Identify idle GSE equipment wasting resources"
+    },
+    {
+      "name": "Maintenance Alerts",
+      "method": "GET",
+      "path": "/api/gse/maintenance",
+      "description": "Predictive maintenance alerts for GSE fleet"
+    },
+    {
+      "name": "GSE Allocation Optimization",
+      "method": "POST",
+      "path": "/api/gse/optimize",
+      "description": "Optimize GSE allocation based on flight schedule"
+    },
+    {
+      "name": "GSE Utilization Report",
+      "method": "GET",
+      "path": "/api/gse/report",
+      "description": "Comprehensive GSE utilization report"
+    },
+    {
+      "name": "Baggage Risk Prediction",
+      "method": "GET",
+      "path": "/api/baggage/risk",
+      "description": "Predict baggage handling risks for a flight"
+    }
+  ],
+  "sample_requests": {
+    "flight_delay_prediction": {
+      "method": "POST",
+      "path": "/api/predict/live",
+      "body": {
+        "flight_number": "TK1988",
+        "dep_airport": "IST",
+        "arr_airport": "JFK",
+        "airline": "TK",
+        "date": "2026-10-20",
+        "dep_time": "14:30"
+      }
+    },
+    "turnaround_optimization": {
+      "method": "POST",
+      "path": "/api/turnaround/plan",
+      "body": {
+        "flight_number": "TK1988",
+        "dep_airport": "IST",
+        "arr_airport": "JFK",
+        "airline": "TK",
+        "date": "2026-10-20",
+        "dep_time": "14:30",
+        "aircraft_type": "narrow_body",
+        "crew_count": 5
+      }
+    },
+    "gse_optimization": {
+      "method": "POST",
+      "path": "/api/gse/optimize",
+      "body": {
+        "flight_schedule": [
+          {
+            "flight_id": "TK1988",
+            "equipment": ["belt_loader", "fuel_truck", "catering_truck"]
+          }
+        ]
+      }
+    }
+  }
+}
