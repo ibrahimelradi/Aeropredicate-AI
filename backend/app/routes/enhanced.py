@@ -90,6 +90,19 @@ from ..services.revenue_analytics import (
     campaign_analysis as _campaign_analysis,
     revenue_report as _revenue_report,
 )
+from ..services.fuel_cost_analytics import (
+    analyze_fuel_costs as _analyze_fuel_costs,
+    calculate_casm as _calculate_casm,
+    track_fuel_variance as _track_variance,
+    emissions_report as _emissions_report,
+    tankering_analysis as _tankering_analysis,
+)
+from ..services.concierge import (
+    journey_plan as _journey_plan,
+    rebooking_options as _rebooking_options,
+    baggage_alert as _baggage_alert,
+    wayfinding as _wayfinding,
+)
 enhanced_bp = Blueprint("enhanced", __name__)
 
 @enhanced_bp.route("/predict/live", methods=["POST"])
@@ -1158,5 +1171,199 @@ def revenue_summary():
     try:
         result = _revenue_report()
         return jsonify({"success": True, "data": result})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+# ============================================================
+# NEW: Fuel Cost Analytics Endpoints
+# ============================================================
+
+@enhanced_bp.route("/fuel/analysis", methods=["POST"])
+def fuel_analysis():
+    """
+    Analyze fuel costs across fleet flights.
+    """
+    data = request.get_json(force=True, silent=True) or {}
+    try:
+        result = _analyze_fuel_costs(data.get("flights", []))
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@enhanced_bp.route("/fuel/casm", methods=["GET"])
+def fuel_casm():
+    """
+    Calculate Cost per Available Seat Mile (CASM).
+    """
+    try:
+        result = _calculate_casm(
+            total_costs=float(request.args.get("total_costs", 50000)),
+            asm=float(request.args.get("asm", 500000)),
+            flight_count=int(request.args.get("flight_count", 10))
+        )
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@enhanced_bp.route("/fuel/variance", methods=["GET"])
+def fuel_variance():
+    """
+    Track fuel burn variance for operational insights.
+    """
+    try:
+        result = _track_variance(
+            planned=float(request.args.get("planned", 5000)),
+            actual=float(request.args.get("actual", 5200)),
+            distance=float(request.args.get("distance", 2000)),
+            aircraft=request.args.get("aircraft", "A320")
+        )
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@enhanced_bp.route("/fuel/emissions", methods=["POST"])
+def fuel_emissions():
+    """
+    Generate emissions tracking report.
+    """
+    data = request.get_json(force=True, silent=True) or {}
+    try:
+        result = _emissions_report(
+            data.get("flights", []),
+            data.get("period", "monthly")
+        )
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@enhanced_bp.route("/fuel/tankering", methods=["GET"])
+def fuel_tankering():
+    """
+    Analyze tankering fuel economics.
+    """
+    try:
+        result = _tankering_analysis(
+            origin=request.args.get("origin", "IST"),
+            destination=request.args.get("destination", "JFK"),
+            aircraft_type=request.args.get("aircraft_type", "A320")
+        )
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+# ============================================================
+# NEW: AI Concierge Endpoints
+# ============================================================
+
+@enhanced_bp.route("/concierge/journey", methods=["GET"])
+def concierge_journey():
+    """
+    Generate personalized journey plan for passenger.
+    """
+    try:
+        preferences = {
+            "loyalty_tier": request.args.get("loyalty_tier", "bronze"),
+            "fast_track": request.args.get("fast_track", "false").lower() == "true",
+            "lounge_access": request.args.get("lounge_access", "false").lower() == "true",
+            "shopping": request.args.get("shopping", "false").lower() == "true",
+            "dining_preferences": request.args.get("dining_preferences", "").split(",") if request.args.get("dining_preferences") else [],
+        }
+        result = _journey_plan(
+            airport=request.args.get("airport", "IST"),
+            origin=request.args.get("origin", "SAW"),
+            departure_time=request.args.get("departure_time", "2026-10-20T15:30:00Z"),
+            preferences=preferences
+        )
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@enhanced_bp.route("/concierge/rebook", methods=["POST"])
+def concierge_rebook():
+    """
+    Generate rebooking options for disrupted passengers.
+    """
+    data = request.get_json(force=True, silent=True) or {}
+    try:
+        from datetime import datetime as dt
+        result = _rebooking_options(
+            booking_ref=data.get("booking_ref", "TK1234"),
+            origin=data.get("origin", "IST"),
+            destination=data.get("destination", "JFK"),
+            original_departure=data.get("original_departure", "2026-10-20T15:30:00Z"),
+            current_time=data.get("current_time", dt.now().isoformat() + "Z"),
+            loyalty_tier=data.get("loyalty_tier", "silver"),
+            fare_paid_usd=data.get("fare_paid_usd", 520),
+            passenger_count=data.get("passenger_count", 1),
+            disruption_type=data.get("disruption_type", "delay")
+        )
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@enhanced_bp.route("/concierge/baggage", methods=["GET"])
+def concierge_baggage():
+    """
+    Get baggage mishandling risk assessment.
+    """
+    try:
+        tags = request.args.get("tags", "TK1234-879,TK1234-880").split(",")
+        result = _baggage_alert(
+            booking_ref=request.args.get("booking_ref", "TK1234"),
+            baggage_tags=tags
+        )
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@enhanced_bp.route("/concierge/wayfinding", methods=["GET"])
+def concierge_wayfinding():
+    """
+    Get wayfinding guide and nearby amenities.
+    """
+    try:
+        amenities = request.args.get("amenities", "coffee,lounge").split(",") if request.args.get("amenities") else None
+        result = _wayfinding(
+            airport=request.args.get("airport", "IST"),
+            gate=request.args.get("gate", "A12"),
+            amenities=amenities
+        )
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@enhanced_bp.route("/concierge/comprehensive", methods=["GET"])
+def concierge_comprehensive():
+    """
+    Generate comprehensive passenger experience package.
+    """
+    try:
+        journey = _journey_plan(
+            airport=request.args.get("airport", "IST"),
+            origin=request.args.get("origin", "SAW"),
+            departure_time=request.args.get("departure_time", "2026-10-20T15:30:00Z"),
+            preferences={
+                "loyalty_tier": request.args.get("loyalty_tier", "gold"),
+                "fast_track": True,
+                "lounge_access": True,
+                "shopping": True,
+                "dining_preferences": ["coffee"],
+            }
+        )
+        wayfinding = _wayfinding(
+            airport=request.args.get("airport", "IST"),
+            gate=journey.get("estimated_gate", "A12"),
+            amenities=["coffee", "lounge"]
+        )
+        baggage = _baggage_alert(
+            booking_ref=request.args.get("booking_ref", "TK1234AB"),
+        )
+        
+        return jsonify({"success": True, "data": {
+            "journey_plan": journey,
+            "wayfinding": wayfinding,
+            "baggage_info": baggage,
+            "status": "ready",
+        }})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
