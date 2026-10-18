@@ -3,7 +3,11 @@ services:
     name: aeropredict-ai
     runtime: python
     build:
-      buildCommand: pip install -r requirements.txt && python -c "from app import create_app; print('✅ Import successful')"
+      buildCommand: |
+        pip install -r requirements.txt && \
+        cd backend && \
+        pip install -r requirements.txt && \
+        python -c "import sys; sys.path.insert(0, '.'); import app; print('✅ Module import successful')"
       dockerfilePath: Dockerfile
     envVars:
       - key: PYTHON_VERSION
@@ -12,6 +16,8 @@ services:
         value: "5000"
       - key: RENDER
         value: "true"
+      - key: PYTHONPATH
+        value: "/app"
     autoDeploy: true
     plan: free
-    healthCheckPath: /api/model/status
+    healthCheckPath: /
