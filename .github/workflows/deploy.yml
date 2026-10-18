@@ -31,11 +31,29 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r backend/requirements.txt
 
-      - name: Run tests
+      - name: Run build verification tests
         run: |
           cd backend
-          python -c "import sys; sys.path.insert(0, '.'); import app; print('✅ Build successful')"
+          python -c "
+          import sys
+          sys.path.insert(0, '.')
+          from app import create_app
+          from app.services.ml_engine_enhanced import predict_with_live_data
+          from app.services.turnaround_optimizer import optimize_turnaround
+          from app.services.gse_optimizer import get_fleet_status
+          app = create_app()
+          routes = len([r for r in app.url_map.iter_rules()])
+          print(f'✅ Build successful: {routes} routes registered')
+          assert routes >= 15, 'Not enough routes registered'
+          "
 
       - name: Trigger Render Deploy
         run: |
-          echo "✅ Build complete - Render should auto-deploy from GitHub integration"
+          echo "✅ Build complete - Render will auto-deploy from GitHub integration"
+          echo "Commit: ${{ github.sha }}"
+          echo "Repository: ${{ github.repository }}"
+
+      - name: Log deployment status
+        run: |
+          echo "Deployment triggered from GitHub Actions"
+          echo "Render will auto-deploy the commit to main branch"
