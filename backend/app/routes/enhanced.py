@@ -47,6 +47,13 @@ from ..services.capacity_optimizer import (
     optimize_baggage as _optimize_baggage,
     get_airport_capacity_report as _capacity_report,
 )
+from ..services.ground_ops_scheduler import (
+    optimize_turnaround as _optimize_turnaround,
+    schedule_ground_crew as _schedule_crew,
+    allocate_gse as _allocate_gse,
+    optimize_fuel_dispatch as _optimize_fuel,
+    comprehensive_ground_ops_report as _ground_ops_report,
+)
 enhanced_bp = Blueprint("enhanced", __name__)
 
 @enhanced_bp.route("/predict/live", methods=["POST"])
@@ -648,6 +655,81 @@ def capacity_report():
     try:
         result = _capacity_report(
             airport=request.args.get("airport", "IST")
+        )
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+# ============================================================
+# NEW: Ground Operations Endpoints
+# ============================================================
+
+@enhanced_bp.route("/ops/turnaround", methods=["GET"])
+def ops_turnaround():
+    """
+    Optimize turnaround for an aircraft type.
+    """
+    try:
+        result = _optimize_turnaround(
+            aircraft_type=request.args.get("aircraft_type", "A320"),
+            target_minutes=int(request.args.get("target_minutes", 45))
+        )
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@enhanced_bp.route("/ops/crew-schedule", methods=["POST"])
+def ops_crew_schedule():
+    """
+    Generate ground crew shift schedule.
+    """
+    data = request.get_json(force=True, silent=True) or {}
+    try:
+        result = _schedule_crew(
+            date=data.get("date", None)
+        )
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@enhanced_bp.route("/ops/gse", methods=["POST"])
+def ops_gse():
+    """
+    Allocate ground support equipment.
+    """
+    data = request.get_json(force=True, silent=True) or {}
+    try:
+        result = _allocate_gse(
+            flight_count=data.get("flight_count", 50),
+            operating_hours=data.get("operating_hours", 16)
+        )
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@enhanced_bp.route("/ops/fuel-dispatch", methods=["POST"])
+def ops_fuel_dispatch():
+    """
+    Optimize fuel truck dispatch.
+    """
+    data = request.get_json(force=True, silent=True) or {}
+    try:
+        result = _optimize_fuel(
+            data.get("flights", [])
+        )
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@enhanced_bp.route("/ops/report", methods=["POST"])
+def ops_report():
+    """
+    Generate comprehensive ground operations report.
+    """
+    data = request.get_json(force=True, silent=True) or {}
+    try:
+        result = _ground_ops_report(
+            date=data.get("date", None)
         )
         return jsonify({"success": True, "data": result})
     except Exception as e:
