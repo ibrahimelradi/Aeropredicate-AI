@@ -20,6 +20,9 @@ COPY backend/ /app/
 # Create models directory with sample model
 RUN mkdir -p /app/models /app/data
 
+# Cache-busting timestamp (forces fresh build on every Render deploy)
+RUN touch /app/.build-timestamp
+
 # Set environment variables
 ENV PORT=5000
 ENV PYTHONPATH=/app
